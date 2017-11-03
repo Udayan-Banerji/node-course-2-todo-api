@@ -168,38 +168,32 @@ describe('POST /todos', () =>{
   describe('PATCH /todos/:id', ()=>{
     it('should update the todo',(done)=>{
       var hexId1 = todos[0]._id.toHexString();
-      var testText = 'Test Text 1 billion';
-      console.log(hexId1);
+      var testText1  = 'Test 1 Text billion';
+      console.log('*********1',hexId1);
       request(app)
       .patch(`/todos/${hexId1}`)
-      .send({
-        completed: true,
-        text: testText})
+      .send({completed: true, text: testText1})
       .expect(200)
       .expect((res) => {
-          console.log(res.body.todo.completedAt);
-          expect(res.body.todo.text).toBe(testText);
+          console.log(res.body.todo.text);
+          expect(res.body.todo.text).toBe(testText1);
           expect(res.body.todo.completed).toBe(true);
           expect(res.body.todo.completedAt).toBeA('number');
       })
       .end(done);
-
-      // .expect((res)=>{
-      //   expect(res.body.todo.completed).toBe(true);
-      // })
     });
 
     it('should clear completedAt when todo is not completed',(done)=>{
       var hexId2 = todos[1]._id.toHexString();
-      var testText  = 'Test 2 Text billion';
-      console.log('*********1',hexId2);
+      var testText2  = 'Test 2 Text billion';
+      console.log('*********2',hexId2);
       request(app)
       .patch(`/todos/${hexId2}`)
-      .send({completed: false, text: testText})
+      .send({completed: false, text: testText2})
       .expect(200)
       .expect((res) => {
           console.log(res.body.todo.text);
-          expect(res.body.todo.text).toBe(testText);
+          expect(res.body.todo.text).toBe(testText2);
           expect(res.body.todo.completed).toBe(false);
           expect(res.body.todo.completedAt).toNotExist();
       })
