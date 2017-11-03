@@ -42,12 +42,12 @@ app.get('/todos/:id',(req, res) => {
   var id = req.params.id;
 
   if (!ObjectID.isValid(id)) {
-    res.status(404).send();
+    return  res.status(404).send({error: 'Invalid object'});
   }
 
   Todo.findById({_id: id}).then((todo) => {
     if(!todo) {
-      res.status(404).send();
+      return res.status(404).send({error: 'Todo not found'});
     }
     res.status(200).send({todo});
   }).catch((e)=> res.status(400).send(e));
@@ -80,7 +80,7 @@ app.patch('/todos/:id',(req, res) => {
       res.status(404).send({error:'Not valid'});
     }
 
-    if(_.isBoolean(body.competed) && body.completed) {
+    if(_.isBoolean(body.completed) && body.completed) {
       body.completedAt = new Date().getTime();     //adding a new field to body, completedAt
     }
     else {
