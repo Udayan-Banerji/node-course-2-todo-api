@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
+const bcrypt = require('bcryptjs');
 
 var UserSchema = new Schema({
   email: {
@@ -79,10 +80,25 @@ UserSchema.statics.findByToken = function (token) {   //statics only creates Mod
      'tokens.token': token,                 //because there is "." use the ''
      'tokens.access': 'auth'
    });
-
-
-
  };
+
+ UserSchema.pre('save', function(next) {
+   var user = this;
+   var hash = '000';
+   var hashedPassword = '000';
+   if (user.isModified('password')) {
+     bcrypt.genSalt(10,(err, salt)=>{
+       bcrypt.hash(user.password, salt, (err, hashedPassword) => {
+         //console.log('Hashed:' ,hashedPassword);
+         hash = hashedPassword;
+         user.password = hashedPassword;
+         next()
+       });
+     });
+   } else {
+   next();
+   }
+ });
 
 var User = mongoose.model('User', UserSchema);
 
