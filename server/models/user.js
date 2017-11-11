@@ -82,6 +82,35 @@ UserSchema.statics.findByToken = function (token) {   //statics only creates Mod
    });
  };
 
+ UserSchema.statics.findByCredentials = function (body) {
+
+      return  User.find({email: body.email}).then((users) => {
+         if(users.length!== 1) {
+           return Promise.reject();
+         }
+
+         else {
+           console.log(JSON.stringify(users[0]));
+
+           return new Promise((resolve, reject) => {
+
+              bcrypt.compare(  body.password, users[0].password, function(err, isMatch) { //only supports callbacks, not promises
+
+                          if(isMatch) {
+                            resolve(users[0]);
+                          } else {
+                            reject({error: "Passwords don't match"});
+                          }
+              });
+           });
+
+         }
+       },(e)=>{
+         reject({error: "Exception"});
+       });
+
+ };
+
  UserSchema.pre('save', function(next) {
    var user = this;
    var hash = '000';
