@@ -279,4 +279,60 @@ describe('POST /todos', () =>{
     });
 
 
-  })
+  });
+
+  describe('POST /users/login',()=>{
+    it('should login a user and return auth token',(done) => {
+      request(app)
+      .post('/users/login')
+      .send({
+        email: users[0].email,
+        password: users[0].password
+      })
+      .expect(200)
+      .expect((res)=>{
+        expect(res.headers['x-auth']).toExist();
+      })
+      .end((err, res) => {
+        if (err) {return done(err);}
+        User.findById(res.body._id).then((user) => {
+
+            // console.log('Found in test',JSON.stringify(user));
+            // console.log('Found token in test',JSON.stringify(user.tokens[user.tokens.length-1]));
+            // console.log('Res headers x-auth',res.headers['x-auth']);
+          expect(user.tokens[user.tokens.length-1]).toInclude({
+            access: 'auth',
+            token: res.headers['x-auth']
+          });
+          done();
+        }).catch((e)=> done(e));
+      });
+
+    });
+
+    it('should reject invalid login',(done) => {
+      request(app)
+      .post('/users/login')
+      .send({
+        email: users[0].email,
+        password: 'SomeInvalidPassword'
+      })
+      .expect(400)
+      .expect((res) => {
+        expect(res.headers['x-auth']).toNotExist();
+        //expect(users[0].tokens.length).toBe(1);   //better to check from database as below
+      })
+      .end((err, res) => {
+        if (err) {return done(err);}
+        User.findById(users[0]._id).then((user) => {
+
+            // console.log('Found in test',JSON.stringify(user));
+            // console.log('Found token in test',JSON.stringify(user.tokens[user.tokens.length-1]));
+            // console.log('Res headers x-auth',res.headers['x-auth']);
+          expect(user.tokens.length).toBe(1);
+          done();
+        }).catch((e)=> done(e));
+      });
+
+    });
+  });

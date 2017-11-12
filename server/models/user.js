@@ -55,7 +55,7 @@ UserSchema.methods.generateAuthToken = function () {
 
   user.tokens.push({access, token});
 
-  return user.save().then(()=> {
+  return user.save().then(()=> {    //adds the token to the end of the array of tokens
     return token;
   });
 
@@ -84,20 +84,21 @@ UserSchema.statics.findByToken = function (token) {   //statics only creates Mod
 
  UserSchema.statics.findByCredentials = function (body) {
 
-      return  User.find({email: body.email}).then((users) => {
-         if(users.length!== 1) {
+      return  User.find({email: body.email}).then((users_db) => {
+         if(users_db.length!== 1) {
            return Promise.reject();
          }
 
          else {
-           console.log(JSON.stringify(users[0]));
+           // console.log('Found user by credentials',JSON.stringify(users_db[0]));
+           // console.log('Found user token',JSON.stringify(users_db[0].tokens[0]));
 
            return new Promise((resolve, reject) => {
 
-              bcrypt.compare(  body.password, users[0].password, function(err, isMatch) { //only supports callbacks, not promises
+              bcrypt.compare(  body.password, users_db[0].password, function(err, isMatch) { //only supports callbacks, not promises
 
                           if(isMatch) {
-                            resolve(users[0]);
+                            resolve(users_db[0]);
                           } else {
                             reject({error: "Passwords don't match"});
                           }
