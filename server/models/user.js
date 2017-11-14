@@ -61,6 +61,20 @@ UserSchema.methods.generateAuthToken = function () {
 
 };
 
+UserSchema.methods.removeToken = function (tokenPassed) {    //this is an instance method
+  var user = this;
+
+  return  user.update({                               //**return allows us to chain the calls
+    $pull: {                                          //this is mongodb $pull which removes the object
+      tokens: {                                       //Pull (remove) from the tokens array
+        token: tokenPassed                            //oject having token = toksnPassed
+      }
+    }
+
+  });
+
+};
+
 UserSchema.statics.findByToken = function (token) {   //statics only creates Model methods (not instance)
    var User = this;
    var decoded;  //undefinded variable

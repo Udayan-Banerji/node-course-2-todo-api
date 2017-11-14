@@ -160,33 +160,18 @@ app.post('/users/login',(req,res) => {
             res.header('x-auth',token ).send(user);
           });
        }).catch((e)=> res.status(400).send({error: 'User not found'}));
-    //   var user = new User ({
-    //   email: req.body.email,
-    //   password: req.body.password
-    // });
-    // console.log(JSON.stringify(user));
-    //
-    // User.find({email: req.body.email}).then((users) => {
-    //   if(users.length!== 1) {
-    //     res.send({error: 'Email not registered'});
-    //   }
-    //
-    //   else {
-    //
-    //     bcrypt.compare(  req.body.password, users[0].password, function(err, isMatch) {
-    //
-    //       if(isMatch) {
-    //         res.send(users[0].tokens[0].token);
-    //       } else {
-    //         res.send({error: "Passwords don't match",password: users[0].password});
-    //       }
-    //     });
-    //   }
-    // },(e)=>{
-    //   res.status(400).send(e);
-    // });
 
 
+});
+
+
+app.delete('/users/me/token',authenticate, (req, res) => {
+  console.log(req.token);
+  req.user.removeToken(req.token).then(() => {
+    res.status(200).send();
+  }, () => {
+    res.status(400).send();
+  });
 });
 
 app.listen(port, () => {
