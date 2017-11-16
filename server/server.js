@@ -20,10 +20,11 @@ app.use(bodyParser.json());  //this is the middleware
 
 
 
-app.post('/todos', (req, res) => {
-  console.log(req.body);
+app.post('/todos',authenticate, (req, res) => {
+  //console.log(req.body);
   var todo = new Todo({
-    text: req.body.text
+    text: req.body.text,
+    _creator: req.user._id
   });
 
   todo.save().then((doc) => {
@@ -33,8 +34,10 @@ app.post('/todos', (req, res) => {
   });
 });
 
-app.get('/todos', (req, res) => {
-  Todo.find().then((todos) => {
+app.get('/todos', authenticate, (req, res) => {
+  Todo.find({
+    _creator: req.user._id
+  }).then((todos) => {
     res.send({todos})   //sent an object, so that we can add in other properties to object later
   },(e)=>{
     res.status(400).send(e);
@@ -42,14 +45,17 @@ app.get('/todos', (req, res) => {
 
 });
 
-app.get('/todos/:id',(req, res) => {
-  var id = req.params.id;
+app.get('/todos/:id',authenticate, (req, res) => {  //with authenticate middleware, the req.user is populated
+  var id = req.params.id;                           //request will have to come with the x-auth token
 
   if (!ObjectID.isValid(id)) {
     return  res.status(404).send({error: 'Invalid object'});
   }
 
-  Todo.findById({_id: id}).then((todo) => {
+  Todo.findOne({
+    _id: id,
+    _creator: req.user._id
+  }).then((todo) => {
     if(!todo) {
       return res.status(404).send({error: 'Todo not found'});
     }
@@ -59,14 +65,17 @@ app.get('/todos/:id',(req, res) => {
 
 });
 
-app.delete('/todos/:id',(req, res) => {
+app.delete('/todos/:id', authenticate, (req, res) => {
   var id = req.params.id;
 
   if (!ObjectID.isValid(id)) {
     res.status(404).send();
   }
 
-  Todo.findByIdAndRemove(id).then((todo) => {
+  Todo.findOneAndRemove({
+    _id: id,
+    _creator: req.user._id
+  }).then((todo) => {
     if(!todo) {
       res.status(404).send();
     }
@@ -76,7 +85,7 @@ app.delete('/todos/:id',(req, res) => {
 
 });
 
-app.patch('/todos/:id',(req, res) => {
+app.patch('/todos/:id', authenticate, (req, res) => {
   var id = req.params.id;
   var body = _.pick(req.body,['text','completed']);
 
@@ -92,7 +101,7 @@ app.patch('/todos/:id',(req, res) => {
       body.completedAt = null;
     }
 
-    Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
+    Todo.findOneAndUpdate({_id: id, _creator: req.user._id}, {$set: body}, {new: true}).then((todo) => {
       if(!todo) {
         return res.status(404).send({error: 'Could not update the Todo because the ID does not exist'});
       }

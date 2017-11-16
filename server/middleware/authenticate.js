@@ -11,7 +11,7 @@ var authenticate = (req, res, next) => {  //middleware for authentication
     req.token = token ;
     next();
   }).catch((e)=>{
-    res.status(401).send({error: 'Authentication required - not found'});
+    res.status(401).send({error: 'Authentication required - user not found'});
   });
 };
 
