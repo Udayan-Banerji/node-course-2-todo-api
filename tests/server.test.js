@@ -141,7 +141,7 @@ describe('POST /todos', () =>{
         if(err) {
           return done(err);
         }
-        Todo.findById(hexId).then((todo)=> {expect(todo).toNotExist();
+        Todo.findById(hexId).then((todo)=> {expect(todo).toBeFalsy();   //return null undefined
         }).catch((e) => {done(e)});
       });
       done();
@@ -159,7 +159,7 @@ describe('POST /todos', () =>{
           if(err) {
             return done(err);
           }
-          Todo.findById(hexId).then((todo)=> {expect(todo).toExist();
+          Todo.findById(hexId).then((todo)=> {expect(todo).toBeTruthy();
           }).catch((e) => {done(e)});
         });
         done();
@@ -201,7 +201,8 @@ describe('POST /todos', () =>{
           console.log(res.body.todo.text);
           expect(res.body.todo.text).toBe(testText1);
           expect(res.body.todo.completed).toBe(true);
-          expect(res.body.todo.completedAt).toBeA('number');
+          // expect(res.body.todo.completedAt).toBeA('number');
+          expect(typeof(res.body.todo.completedAt)).toBe('number');
       })
       .end(done);
     });
@@ -232,7 +233,8 @@ describe('POST /todos', () =>{
           console.log(res.body.todo.text);
           expect(res.body.todo.text).toBe(testText2);
           expect(res.body.todo.completed).toBe(false);
-          expect(res.body.todo.completedAt).toNotExist();
+          // expect(res.body.todo.completedAt).toNotExist();
+          expect(res.body.todo.completedAt).toBeFalsy();
       })
       .end(done);
     });
@@ -275,8 +277,9 @@ describe('POST /todos', () =>{
       .send({email, password})
       .expect(200)
       .expect((res) => {
-        expect(res.header['x-auth']).toExist();
-        expect(res.body._id).toExist();
+        // expect(res.header['x-auth']).toExist();
+        expect(res.header['x-auth']).toBeTruthy();
+        expect(res.body._id).toBeTruthy();
         expect(res.body.email).toBe(email);
       })
       .end((err,res) => {                  //custom end function to check the database for existing data
@@ -287,7 +290,7 @@ describe('POST /todos', () =>{
         User.find({email: email}).then((users) => {
           expect(users.length).toBe(1);
           expect(users[0].email).toBe(email);
-          expect(users[0].password).toNotBe(password);
+          expect(users[0].password).not.toBe(password);
           done();
 
         }).catch((e) => {done(e)});
@@ -342,7 +345,7 @@ describe('POST /todos', () =>{
       })
       .expect(200)
       .expect((res)=>{
-        expect(res.headers['x-auth']).toExist();
+        expect(res.headers['x-auth']).toBeTruthy();
       })
       .end((err, res) => {
         if (err) {return done(err);}
@@ -351,7 +354,8 @@ describe('POST /todos', () =>{
             // console.log('Found in test',JSON.stringify(user));
             // console.log('Found token in test',JSON.stringify(user.tokens[user.tokens.length-1]));
             // console.log('Res headers x-auth',res.headers['x-auth']);
-          expect(user.tokens[user.tokens.length-1]).toInclude({
+            // remember to convert to object
+          expect(user.toObject().tokens[user.tokens.length-1]).toMatchObject({
             access: 'auth',
             token: res.headers['x-auth']
           });
@@ -370,7 +374,7 @@ describe('POST /todos', () =>{
       })
       .expect(400)
       .expect((res) => {
-        expect(res.headers['x-auth']).toNotExist();
+        expect(res.headers['x-auth']).toBeFalsy();
         //expect(users[0].tokens.length).toBe(1);   //better to check from database as below
       })
       .end((err, res) => {
